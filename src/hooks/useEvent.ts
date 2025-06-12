@@ -53,6 +53,7 @@ export const useEvent = () => {
       socket.off("event:created");
       socket.off("event:updated");
       socket.off("event:deleted");
+      // socket.disconnect();
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -23,6 +23,7 @@ import { clearMessage, showMessage } from "../../../redux/slices/messageSlice";
 import { ThreeDot } from "react-loading-indicators";
 import Badge from "../../ui/badge/Badge";
 import ImageGalleryUploader from "../../form/form-elements/ImageGalleryUploader";
+import { useLocation } from "react-router";
 
 interface Option {
   value: string;
@@ -62,6 +63,35 @@ export default function BasicTableOne<T extends { id: number }>({
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const dispatch = useAppDispatch();
+
+  //for search to highlight result
+  const location = useLocation();
+  const highlightIdParam = new URLSearchParams(location.search).get(
+    "highlight"
+  );
+
+  const highlightIds = highlightIdParam
+    ? highlightIdParam.split(",").map((id) => id.trim())
+    : [];
+
+  useEffect(() => {
+    if (highlightIds.length > 0 && page === "tours") {
+      setTimeout(() => {
+        highlightIds.forEach((id) => {
+          const scrollRow = document.getElementsByClassName(
+            `row-scroll-${id}`
+          ) as HTMLCollectionOf<HTMLElement>;
+
+          if (scrollRow.length > 0) {
+            scrollRow[0].scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+        });
+      }, 200);
+    }
+  }, [highlightIdParam, page]);
 
   function objectToFormData(obj: Record<string, any>): FormData {
     const formData = new FormData();
@@ -278,7 +308,15 @@ export default function BasicTableOne<T extends { id: number }>({
                 {/* Table Body */}
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                   {data.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow
+                      key={item.id}
+                      className={`row-scroll-${item.id} ${
+                        highlightIds.includes(item.id.toString()) &&
+                        page === "tours"
+                          ? "bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 dark:from-yellow-800 dark:via-yellow-600 dark:to-yellow-500 shadow-lg transform transition-all duration-300 ease-in-out"
+                          : ""
+                      }`}
+                    >
                       {columns.map((col) => {
                         if (col === "actions") {
                           return (

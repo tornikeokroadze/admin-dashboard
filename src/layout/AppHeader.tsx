@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
+import api from "../services/api";
+import { TourItem } from "../types/tour";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+
+  const navigate = useNavigate();
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -24,6 +28,9 @@ const AppHeader: React.FC = () => {
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<TourItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -39,6 +46,38 @@ const AppHeader: React.FC = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setQuery(value);
+
+    if (value.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.get(`/tours/search`, {
+        params: { query: value },
+      });
+
+      setResults(response.data.data);
+    } catch (error) {
+      console.error("Error fetching search results", error);
+      setResults([]);
+    }
+    setLoading(false);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const ids = results.map((item) => item.id);
+    navigate(`/all-tours?highlight=${ids}`);
+    setQuery("");
+    setResults([]);
+  };
 
   return (
     <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
@@ -117,7 +156,7 @@ const AppHeader: React.FC = () => {
           </button>
 
           <div className="hidden lg:block">
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="relative">
                 <span className="absolute -translate-y-1/2 pointer-events-none left-4 top-1/2">
                   <svg
@@ -139,14 +178,82 @@ const AppHeader: React.FC = () => {
                 <input
                   ref={inputRef}
                   type="text"
+                  value={query}
+                  onChange={handleChange}
                   placeholder="Search or type command..."
-                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+                  className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
                 />
 
-                <button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
+                <button
+                  type="submit"
+                  className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400"
+                >
                   <span> ⌘ </span>
                   <span> K </span>
                 </button>
+                {/* Show loading indicator */}
+                {loading && (
+                  <div className="absolute top-full left-0 mt-2 text-gray-500">
+                    Loading...
+                  </div>
+                )}
+
+                {/* Display search results */}
+                {results.length > 0 && (
+                  <ul className="absolute top-full left-0 mt-2 w-full max-h-60 overflow-y-auto border border-gray-300 bg-white shadow-lg dark:border-gray-800 dark:bg-gray-900">
+                    {results.map((result, index) => (
+                      <Link
+                        key={index}
+                        to={`/all-tours?highlight=${result.id}`}
+                        onClick={() => {
+                          setQuery("");
+                          setResults([]);
+                        }}
+                      >
+                        <li className="px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800">
+                          <div className="flex items-center gap-3">
+                            <div className="h-[50px] w-[50px] overflow-hidden rounded-md">
+                              <img
+                                src={`http://localhost:5500/uploads/images/${result.image} `}
+                                className="h-[50px] w-[50px]"
+                                alt={result.title}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                                {result.title}
+                              </p>
+                              <div className="flex">
+                                <span className="text-gray-500 text-theme-xs dark:text-gray-400">
+                                  ${Number(result.price).toFixed(2)}
+                                </span>
+                                <span className="flex items-center text-gray-500 text-theme-xs dark:text-gray-400 ml-2">
+                                  <svg
+                                    className="fill-gray-500 dark:fill-gray-400 mr-1/2"
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      clipRule="evenodd"
+                                      d="M12 2C8.13401 2 5 5.13401 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13401 15.866 2 12 2ZM7 9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9C17 12.7386 13.3524 17.1438 12 18.6989C10.6476 17.1438 7 12.7386 7 9ZM12 11.5C13.1046 11.5 14 10.6046 14 9.5C14 8.39543 13.1046 7.5 12 7.5C10.8954 7.5 10 8.39543 10 9.5C10 10.6046 10.8954 11.5 12 11.5Z"
+                                      fill=""
+                                    />
+                                  </svg>
+
+                                  {result.location}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      </Link>
+                    ))}
+                  </ul>
+                )}
               </div>
             </form>
           </div>
