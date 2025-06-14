@@ -19,7 +19,6 @@ import { useAppDispatch } from "../redux/hooks";
 import { showMessage } from "../redux/slices/messageSlice";
 import Checkbox from "../components/form/input/Checkbox";
 
-
 export default function AllTours() {
   const [tours, setTours] = useState<TourItem[] | null>(null);
   const [tourTypes, setTourTypes] = useState<TourTypeItem[] | null>(null);
@@ -408,7 +407,6 @@ export default function AllTours() {
                       }}
                     />
                   </div>
-                  <p>{formData.name}</p>
 
                   <div className="col-span-2">
                     <Label>Gallery</Label>

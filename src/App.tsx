@@ -29,6 +29,8 @@ export default function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    dispatch(verifyToken());
+
     const interval = setInterval(() => {
       dispatch(verifyToken());
     }, 15 * 60 * 1000); // every 15 minutes

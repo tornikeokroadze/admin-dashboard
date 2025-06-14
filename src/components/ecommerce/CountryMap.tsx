@@ -31,8 +31,8 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
           },
         },
         {
-          latLng: [20.7504374, 73.7276105],
-          name: "India",
+          latLng: [42.3154, 43.3569],
+          name: "Georgia",
           style: { fill: "#465FFF", borderWidth: 1, borderColor: "white" },
         },
         {
@@ -42,7 +42,7 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
         },
         {
           latLng: [-25.0304388, 115.2092761],
-          name: "Sweden",
+          name: "Australia",
           style: {
             fill: "#465FFF",
             borderWidth: 1,

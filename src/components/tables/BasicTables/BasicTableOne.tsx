@@ -89,7 +89,7 @@ export default function BasicTableOne<T extends { id: number }>({
             });
           }
         });
-      }, 200);
+      }, 600);
     }
   }, [highlightIdParam, page]);
 
@@ -259,7 +259,7 @@ export default function BasicTableOne<T extends { id: number }>({
         </div>
       ) : (
         <>
-          {deletable && (
+          {deletable && page == "tours" ? (
             <div className="flex gap-2 mb-4">
               <Button
                 onClick={() => setSelectMode(!selectMode)}
@@ -279,6 +279,8 @@ export default function BasicTableOne<T extends { id: number }>({
                 </Button>
               )}
             </div>
+          ) : (
+            ""
           )}
 
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -311,8 +313,8 @@ export default function BasicTableOne<T extends { id: number }>({
                     <TableRow
                       key={item.id}
                       className={`row-scroll-${item.id} ${
-                        highlightIds.includes(item.id.toString()) &&
-                        page === "tours"
+                        page === "tours" &&
+                        highlightIds.includes(item.id.toString())
                           ? "bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 dark:from-yellow-800 dark:via-yellow-600 dark:to-yellow-500 shadow-lg transform transition-all duration-300 ease-in-out"
                           : ""
                       }`}

@@ -48,8 +48,8 @@ const Calendar: React.FC = () => {
     const start = new Date(selectInfo.start);
     const end = new Date(selectInfo.end || selectInfo.start);
 
-    start.setHours(start.getHours() + 4);
-    end.setHours(end.getHours() + 4);
+    // start.setHours(start.getHours() + 4);
+    // end.setHours(end.getHours() + 4);
 
     const formatForInput = (date: Date) => date.toISOString().slice(0, 16);
 
@@ -75,7 +75,7 @@ const Calendar: React.FC = () => {
 
     if (start) {
       const adjustedStart = new Date(start);
-      adjustedStart.setHours(adjustedStart.getHours() + 4);
+      // adjustedStart.setHours(adjustedStart.getHours() + 4);
       setEventStartDate(adjustedStart.toISOString().slice(0, 16));
     } else {
       setEventStartDate("");
@@ -83,7 +83,7 @@ const Calendar: React.FC = () => {
 
     if (end) {
       const adjustedEnd = new Date(end);
-      adjustedEnd.setHours(adjustedEnd.getHours() + 4);
+      // adjustedEnd.setHours(adjustedEnd.getHours() + 4);
       setEventEndDate(adjustedEnd.toISOString().slice(0, 16));
     } else {
       setEventEndDate("");
